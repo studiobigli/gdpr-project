@@ -5,49 +5,44 @@ import random
 import csv
 import os
 
-class GenreProvider(BaseProvider):
-    def movie_genre(self):
-        return random.choice(['Action', 'Comedy', 'Thriller', 'Horror', 'Political', 'Documentary'])
+#GDPR Relevant fields required
+#address
+#country
+#phone_number
+#date_of_birth
+#games_played
+#won_games
+#drawn_games
+#lost_games
+#points
+#rank
 
 class LanguageProvider(BaseProvider):
     def language(self):
         return random.choice(['English', 'Chinese', 'Italian', 'Spanish', 'French', 'Japanese', 'Korean'])
 
-fake = Faker()
+fake = Faker('en_GB')
 
-fake.add_provider(GenreProvider)
 fake.add_provider(LanguageProvider)
 
-movie_id_count = 0
+person_id_count = 0
 
-def movie_id():
-    global movie_id_count
-    movie_id_count += 1
-    return movie_id_count
+def person_id():
+    global person_id_count
+    person_id_count += 1
+    return person_id_count
 
-def get_movie_name():
-    words = fake.words()
+def get_street_address():
+    return fake.street_address().replace('\n', ' ').title()
 
-    capitalized_words = list(map(str.capitalize, words))
-    return ' '.join(capitalized_words)
+def generate_data():
+    return [person_id(), fake.first_name(), fake.last_name(), get_street_address(), fake.city(), fake.postcode()]
 
-def get_movie_date():
-    return datetime.strftime(fake.date_time_this_decade(), "%B %d, %Y")
-
-def get_movie_len():
-    return random.randrange(50, 150)
-
-def get_movie_rating():
-    return round(random.uniform(1.0,10.0), 1)
-
-def generate_movie():
-    return [movie_id(), get_movie_name(), fake.movie_genre(), get_movie_date(), get_movie_len(), get_movie_rating(), fake.language()]
-
-with open('movie_data.csv', 'w') as csvfile:
+with open('fake_data.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
-    writer.writerow(['Title', 'Genre', 'Premiere', 'Runtime', 'IMDB Score', 'Language'])
+    writer.writerow(['id', 'First Name', 'Last Name', 'Street Address', 'City', 'Postcode'])
     file_size = 0
     while file_size < 1:
-        file_size = os.stat('movie_data.csv').st_size / (1024 * 1024)
-        writer.writerow(generate_movie())
+        file_size = os.stat('fake_data.csv').st_size / (1024 * 1024)
+        writer.writerow(generate_data())
 
