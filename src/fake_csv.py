@@ -66,7 +66,7 @@ def generate_data():
         score[3],
         score[4],
         score[5],
-        fake.language()
+        fake.language(),
     ]
 
 
