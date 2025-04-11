@@ -3,7 +3,29 @@ from faker.providers import BaseProvider
 import random
 import csv
 import os
+import sys
 
+filepath = ""
+
+if len(sys.argv) > 1:
+    filepath = sys.argv[1]
+
+if not isinstance(filepath, str) or not filepath:
+    filepath = "../dummydata.csv"
+    print(f'Filepath not included, defaulting to {filepath}\n') 
+
+if os.access(filepath, os.F_OK) is True:
+    if os.access(filepath, os.W_OK) is False:
+        print(f'File {filepath} exists and is not writeable, Aborting')
+        sys.exit()
+    else:
+        overwrite = ""
+        while overwrite != "y" and overwrite != "n":
+            print(f'{overwrite=}')
+            overwrite = input(f'File {filepath} already exists, overwrite? (y/n):').lower()
+        if overwrite != "y":
+            print("Closing...")
+            sys.exit()
 
 class LanguageProvider(BaseProvider):
     def language(self):
@@ -70,7 +92,7 @@ def generate_data():
     ]
 
 
-with open("fake_data.csv", "w", newline="") as csvfile:
+with open(filepath, "w", newline="") as csvfile:
     writer = csv.writer(csvfile)
     writer.writerow(
         [
@@ -93,5 +115,5 @@ with open("fake_data.csv", "w", newline="") as csvfile:
     )
     file_size = 0
     while file_size < 1:
-        file_size = os.stat("fake_data.csv").st_size / (1024 * 1024)
+        file_size = os.stat(filepath).st_size / (1024 * 1024)
         writer.writerow(generate_data())
