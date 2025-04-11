@@ -12,20 +12,23 @@ if len(sys.argv) > 1:
 
 if not isinstance(filepath, str) or not filepath:
     filepath = "../dummydata.csv"
-    print(f'Filepath not included, defaulting to {filepath}\n') 
+    print(f"Filepath not included, defaulting to {filepath}\n")
 
 if os.access(filepath, os.F_OK) is True:
     if os.access(filepath, os.W_OK) is False:
-        print(f'File {filepath} exists and is not writeable, Aborting')
+        print(f"File {filepath} exists and is not writeable, Aborting")
         sys.exit()
     else:
         overwrite = ""
         while overwrite != "y" and overwrite != "n":
-            print(f'{overwrite=}')
-            overwrite = input(f'File {filepath} already exists, overwrite? (y/n):').lower()
+            print(f"{overwrite=}")
+            overwrite = input(
+                f"File {filepath} already exists, overwrite? (y/n):"
+            ).lower()
         if overwrite != "y":
             print("Closing...")
             sys.exit()
+
 
 class LanguageProvider(BaseProvider):
     def language(self):
