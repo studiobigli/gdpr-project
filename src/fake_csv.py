@@ -88,6 +88,7 @@ with open("fake_data.csv", "w", newline="") as csvfile:
             "Ties",
             "Points",
             "Rank",
+            "Language",
         ]
     )
     file_size = 0
