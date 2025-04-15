@@ -56,7 +56,7 @@ def alter_data(column_idx, filepath):
     target_path = filepath.rsplit(".", 1)
     target_path[0] += "-obfuscated."
     target_path = ''.join(target_path)
-    print(f'Writing to {target_path}...')
+    print(f'Writing to \"{target_path}\"...')
     
     with open(filepath, "r") as sourcef:
         doc_length = sourcef.readlines()
@@ -91,9 +91,9 @@ def obfuscate(columns, filepath):
         return False
 
     endfile = alter_data(columns[1], filepath)
-    return f'Task Completed. Obfuscated data can be found in the file at {endfile}'
+    return [endfile, f'Task Completed. Obfuscated data can be found in the file at \"{endfile}\"']
 
 if __name__ == "__main__":
     columns = ["First Name", "Last Name"]
     filepath = "../dummydata.csv"
-    print(obfuscate(columns, filepath))
+    print(obfuscate(columns, filepath)[1])
