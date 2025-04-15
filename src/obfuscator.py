@@ -37,10 +37,11 @@ def is_csv(filepath):
 
 
 def column_validity(columns, filepath):
-    with open(filepath, "r", newline='') as file:
+    with open(filepath, "r") as file:
         check = file.readline().split(",")
-    
-    print(f'{check=}')
+        check[-1] = check[-1].replace("\n", "")
+
+    #print(f'{check=}')
     for x in columns:
         if x not in check:
             print(f'Column {x} not in CSV file, aborting.')
@@ -50,24 +51,33 @@ def column_validity(columns, filepath):
 
     return [True, column_idx]
 
-def alter_data(column_idx, filepath):
-    
+def alter_data(column_idx, filepath): 
 
     target_path = filepath.rsplit(".", 1)
     target_path[0] += "-obfuscated."
-    target_path = target_path.join()
+    target_path = ''.join(target_path)
     print(f'Writing to {target_path}...')
+    
+    with open(filepath, "r") as sourcef:
+        doc_length = sourcef.readlines()
 
     with open(filepath, "r") as sourcef:
         with open(target_path, "w") as targetf:
-            for line in sourcef:
-                source_line = sourcef.readline().split(",")
             
+            for line in range(len(doc_length)):
+                if line == 0:
+                    targetf.write(sourcef.readline())
+                    continue
+                source_line = sourcef.readline().split(",")
+                source_line[-1].replace("\n", "")
+                
                 for idx, x in enumerate(source_line):
                     if idx in column_idx:
-                        x = "***"
+                        source_line[idx] = "***"
 
-                targetf.write(source_line)
+                targetf.write(','.join(source_line))
+    
+    return target_path
 
 def obfuscate(columns, filepath):
     if not filepath_validity(filepath):
@@ -80,10 +90,10 @@ def obfuscate(columns, filepath):
     if columns[0] is False:
         return False
 
-    alter_data(columns[1], filepath)
-    return True
+    endfile = alter_data(columns[1], filepath)
+    return f'Task Completed. Obfuscated data can be found in the file at {endfile}'
 
 if __name__ == "__main__":
-    columns = ["first_name", "last_name"]
+    columns = ["First Name", "Last Name"]
     filepath = "../dummydata.csv"
     print(obfuscate(columns, filepath))
