@@ -64,4 +64,7 @@ class TestFunctionIsCSV:
         p.write_text("id,First Name, Last Name, Age\n1,Adam,Ant,20\n")
         assert is_csv(str(p)) is True
 
+        p.write_text("id,first,last,age\n1,,,20\n")
+        assert is_csv(str(p)) is True
+
 
