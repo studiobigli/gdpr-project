@@ -1,5 +1,5 @@
 #from pytest import tmp_path
-from src.obfuscator import filepath_validity
+from src.obfuscator import filepath_validity, is_csv
 
 class TestFunctionFilepathValidity:
     def test_function_returns_false_if_input_is_not_string(self):
@@ -31,3 +31,37 @@ class TestFunctionFilepathValidity:
         assert filepath_validity(str(p)) is True
         assert p.read_text(encoding="utf-8") == "content"
         assert len(list(tmp_path.iterdir())) == 1
+
+class TestFunctionIsCSV:
+    def test_function_returns_false_on_invalid_file_extension(self):
+        arguments = [
+                        "../dummydata.xls",
+                        "../dummydata.txt",
+                        "../dummydata.zip",
+                        "../dummydata.json"
+                    ]
+
+        for arg in arguments:
+            assert is_csv(arg) is False
+        
+    def test_function_returns_false_on_invalid_csv_data(self, tmp_path):
+        d = tmp_path / "sub"
+        d.mkdir()
+        p = d / "testdata.csv"
+        p.write_text("id;firstname;lastname;age\n1;aaa;aaa;20\n2;bbb;bbb;21\n")
+        assert is_csv(str(p)) is False
+
+        p.write_text("id,firstname,lastname\n1,aaa,aaa,20")
+        assert is_csv(str(p)) is False
+
+    def test_function_returns_true_if_data_valid(self, tmp_path):
+        d = tmp_path / "sub"
+        d.mkdir()
+        p = d / "testdata.csv"
+        p.write_text("id,firstname,lastname,age\n1,aaa,aaa,20\n2,bbb,bbb,21\n")
+        assert is_csv(str(p)) is True
+
+        p.write_text("id,First Name, Last Name, Age\n1,Adam,Ant,20\n")
+        assert is_csv(str(p)) is True
+
+
