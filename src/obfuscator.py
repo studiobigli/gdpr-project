@@ -43,7 +43,6 @@ def column_validity(columns, filepath):
         check = file.readline().split(",")
         check[-1] = check[-1].replace("\n", "")
 
-    # print(f'{check=}')
     for x in columns:
         if x not in check:
             print(f"Column {x} not in CSV file, aborting.")
