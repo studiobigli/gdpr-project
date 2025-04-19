@@ -100,14 +100,14 @@ class TestFunctionAlterData:
         assert target_path_check[1] == "dummydata-obfuscated.csv"
 
     def test_function_replaces_data_with_obfuscated_string(self, dummy_file):
-        columns = [0,1,2,3]
-        
+        columns = [0, 1, 2, 3]
+
         for column in range(4):
-            print(f'{column=}')
+            print(f"{column=}")
             dummy_file[0].write_text(test_good_data)
             target_path = alter_data([column], str(dummy_file[0]))
             with open(target_path, "r") as targetf:
-                
+
                 for x in range(2):
                     if x == 0:
                         targetf.readline()
@@ -128,5 +128,19 @@ class TestFunctionAlterData:
                     continue
                 line = targetf.readline()
                 print(line)
-                print (f'{line[-1::]}')
-                assert line[-1::] == "\n" 
+                print(f"{line[-1::]}")
+                assert line[-1::] == "\n"
+
+
+class TestObfuscate:
+    def test_function_returns_false_if_filepath_invalid(self):
+        pass
+
+    def test_function_returns_false_if_not_csv_extension(self):
+        pass
+
+    def test_function_returns_false_if_column_names_invalid(self):
+        pass
+
+    def test_function_returns_successfully_with_target_filepath(self):
+        pass
