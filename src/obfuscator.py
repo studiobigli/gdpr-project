@@ -77,7 +77,7 @@ def alter_data(column_idx, filepath):
                     if idx in column_idx:
                         source_line[idx] = "***"
 
-                targetf.write(",".join(source_line))
+                targetf.write(",".join(source_line) + "\n")
 
     return target_path
 
