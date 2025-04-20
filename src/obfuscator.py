@@ -85,6 +85,23 @@ def _alter_data(column_idx, filepath):
 
 
 def obfuscate(columns, filepath):
+    """
+    Takes the data from a CSV file and a list of column names and replaces the
+    data under those columns with the string '***'. The data is then stored in
+    another CSV file, with '-obfuscated' appended to the filename before the
+    file extension.
+
+    Parameters:
+    columns (list of str): A list containing the names of columns whose data
+    should be obfuscated.
+    filepath (str): A string containing the filepath of the CSV file to be
+    processed.
+
+    Returns:
+    list of str: First string is the filepath of the CSV with the obfuscated
+    data. Second string is a confirmation of this filepath location.
+    """
+
     if not _filepath_validity(filepath):
         return False
 
