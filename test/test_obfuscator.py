@@ -1,4 +1,10 @@
-from src.obfuscator import filepath_validity, is_csv, column_validity, alter_data
+from src.obfuscator import (
+    filepath_validity,
+    is_csv,
+    column_validity,
+    alter_data,
+    obfuscate,
+)
 
 import pytest
 
@@ -41,6 +47,11 @@ class TestFunctionFilepathValidity:
         assert filepath_validity(str(dummy_file[0])) is True
         assert dummy_file[0].read_text(encoding="utf-8") == "content"
         assert len(list(dummy_file[1].iterdir())) == 1
+
+    def test_function_returns_error_if_filepath_is_unreadable(self, dummy_file):
+        with pytest.raises(Exception) as e:
+            bad_file = str(dummy_file[0]).replace("csv", "xls")
+            assert "File is unreadable" in e.value
 
 
 class TestFunctionIsCSV:
@@ -103,7 +114,6 @@ class TestFunctionAlterData:
         columns = [0, 1, 2, 3]
 
         for column in range(4):
-            print(f"{column=}")
             dummy_file[0].write_text(test_good_data)
             target_path = alter_data([column], str(dummy_file[0]))
             with open(target_path, "r") as targetf:
@@ -114,7 +124,6 @@ class TestFunctionAlterData:
                         continue
                     line = targetf.readline().split(",")
                     line[-1] = line[-1].replace("\n", "")
-                    print(x, line, column, line[column])
                     assert line[column] == "***"
 
     def test_function_doesnt_remove_line_break_when_obfuscating(self, dummy_file):
@@ -122,25 +131,36 @@ class TestFunctionAlterData:
         target_path = alter_data([3], str(dummy_file[0]))
         with open(target_path, "r") as targetf:
             for x in range(2):
-                print(x)
                 if x == 0:
                     targetf.readline()
                     continue
                 line = targetf.readline()
-                print(line)
-                print(f"{line[-1::]}")
                 assert line[-1::] == "\n"
 
 
 class TestObfuscate:
     def test_function_returns_false_if_filepath_invalid(self):
-        pass
+        assert obfuscate(test_good_columns, 90210) is False
 
-    def test_function_returns_false_if_not_csv_extension(self):
-        pass
+    def test_function_returns_false_if_not_csv_extension(self, dummy_file):
+        bad_file = str(dummy_file[0]).replace("csv", "xls")
+        assert obfuscate(test_good_columns, bad_file) is False
 
-    def test_function_returns_false_if_column_names_invalid(self):
-        pass
+    def test_function_returns_false_if_column_names_invalid(self, dummy_file):
+        bad_columns = ["id", "firstname", "lastname", "Age"]
+        dummy_file[0].write_text(test_good_data)
+        assert obfuscate(bad_columns, str(dummy_file[0])) is False
 
-    def test_function_returns_successfully_with_target_filepath(self):
-        pass
+    def test_function_returns_successfully_with_target_filepath(self, dummy_file):
+        dummy_file[0].write_text(test_good_data)
+        result = obfuscate(test_good_columns, str(dummy_file[0]))
+
+        path_check = str(dummy_file[0]).rsplit(".", 1)
+        path_check[1] = "-obfuscated." + path_check[1]
+        path_check = "".join(path_check)
+
+        assert result[0] == path_check
+        assert (
+            result[1]
+            == f'Task Completed. Obfuscated data can be found in the file at "{path_check}"'
+        )

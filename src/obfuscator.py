@@ -8,27 +8,29 @@ def filepath_validity(filepath):
         print(f'Filepath "{filepath}" is invalid, is of type {type(filepath)}')
         return False
 
-    if os.access(filepath, os.R_OK):
+    try:
+        os.access(filepath, os.R_OK)
         print(f'Filepath "{filepath}" is readable...')
         return True
+    except:
+        raise Exception("File is unreadable")
 
 
 def is_csv(filepath):
+    print(f"Checking {filepath}...")
     if filepath.rsplit(".", 1)[1] != "csv":
-        print(f"File \"{filepath}\" is not .csv")
+        print(f'File "{filepath}" is not .csv')
         return False
 
     try:
         with open(filepath, newline="\n") as file:
             check = file.read(8192)
 
-            if not all([x in string.printable or x.isprintable() for x in check]):
-                return False
-
             dialect = csv.Sniffer().sniff(check)
-            
-            #Consider checking more details of the CSV dialect to prevent issues
+
+            # Consider checking more details of the CSV dialect to prevent issues
             if dialect.delimiter != ",":
+                print("Dialect delimiter incorrect")
                 return False
 
             return True
@@ -98,11 +100,3 @@ def obfuscate(columns, filepath):
         endfile,
         f'Task Completed. Obfuscated data can be found in the file at "{endfile}"',
     ]
-
-
-if __name__ == "__main__":
-
-    # Placeholder for testing
-    columns = ["First Name", "Last Name"]
-    filepath = "../dummydata.csv"
-    print(obfuscate(columns, filepath))[1]
