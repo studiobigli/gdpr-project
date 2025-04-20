@@ -1,8 +1,8 @@
 from src.obfuscator import (
-    filepath_validity,
-    is_csv,
-    column_validity,
-    alter_data,
+    _filepath_validity,
+    _is_csv,
+    _column_validity,
+    _alter_data,
     obfuscate,
 )
 
@@ -13,8 +13,7 @@ test_good_columns = ["id", "First Name", "Last Name", "Age"]
 
 
 @pytest.fixture(scope="function")
-def dummy_file(tmp_path):
-    filename = "dummydata.csv"
+def dummy_file(tmp_path, filename="dummydata.csv"):
     d = tmp_path / "sub"
     d.mkdir()
     p = d / filename
@@ -40,18 +39,20 @@ class TestFunctionFilepathValidity:
         ]
 
         for arg in arguments:
-            assert filepath_validity(arg) is False
+            assert _filepath_validity(arg) is False
 
     def test_function_returns_true_if_filepath_is_readable(self, dummy_file):
         dummy_file[0].write_text("content", encoding="utf-8")
-        assert filepath_validity(str(dummy_file[0])) is True
+        assert _filepath_validity(str(dummy_file[0])) is True
         assert dummy_file[0].read_text(encoding="utf-8") == "content"
         assert len(list(dummy_file[1].iterdir())) == 1
 
     def test_function_returns_error_if_filepath_is_unreadable(self, dummy_file):
-        with pytest.raises(Exception) as e:
-            bad_file = str(dummy_file[0]).replace("csv", "xls")
-            assert "File is unreadable" in e.value
+        bad_file = str(dummy_file[0]).replace("csv", "xls")
+        dummy_file[0].write_text(test_good_data)
+
+        with pytest.raises(Exception):
+            _filepath_validity(bad_file)
 
 
 class TestFunctionIsCSV:
@@ -64,28 +65,28 @@ class TestFunctionIsCSV:
         ]
 
         for arg in arguments:
-            assert is_csv(arg) is False
+            assert _is_csv(arg) is False
 
     def test_function_returns_false_on_invalid_csv_data(self, dummy_file):
         dummy_file[0].write_text(
             "id;firstname;lastname;age\n1;aaa;aaa;20\n2;bbb;bbb;21\n"
         )
-        assert is_csv(str(dummy_file[0])) is False
+        assert _is_csv(str(dummy_file[0])) is False
 
         dummy_file[0].write_text("id,firstname,lastname\n1,aaa,aaa,20")
-        assert is_csv(str(dummy_file[0])) is False
+        assert _is_csv(str(dummy_file[0])) is False
 
     def test_function_returns_true_if_data_valid(self, dummy_file):
         dummy_file[0].write_text(
             "id,firstname,lastname,age\n1,aaa,aaa,20\n2,bbb,bbb,21\n"
         )
-        assert is_csv(str(dummy_file[0])) is True
+        assert _is_csv(str(dummy_file[0])) is True
 
         dummy_file[0].write_text("id,First Name, Last Name, Age\n1,Adam,Ant,20\n")
-        assert is_csv(str(dummy_file[0])) is True
+        assert _is_csv(str(dummy_file[0])) is True
 
         dummy_file[0].write_text("id,first,last,age\n1,,,20\n")
-        assert is_csv(str(dummy_file[0])) is True
+        assert _is_csv(str(dummy_file[0])) is True
 
 
 class TestFunctionColumnValidity:
@@ -94,19 +95,22 @@ class TestFunctionColumnValidity:
     ):
         dummy_file[0].write_text(test_good_data)
         columns = ["id", "firstname", "lastname", "age"]
-        assert column_validity(columns, dummy_file[0]) == [False, []]
+        assert _column_validity(columns, dummy_file[0]) == [False, []]
 
     def test_function_returns_true_and_column_indexes_if_input_matches(
         self, dummy_file
     ):
         dummy_file[0].write_text(test_good_data)
-        assert column_validity(test_good_columns, dummy_file[0]) == [True, [0, 1, 2, 3]]
+        assert _column_validity(test_good_columns, dummy_file[0]) == [
+            True,
+            [0, 1, 2, 3],
+        ]
 
 
 class TestFunctionAlterData:
     def test_function_creates_target_file_with_expected_path(self, dummy_file):
         dummy_file[0].write_text(test_good_data)
-        target_path = alter_data(test_good_columns, str(dummy_file[0]))
+        target_path = _alter_data(test_good_columns, str(dummy_file[0]))
         target_path_check = target_path.rsplit("/", 1)
         assert target_path_check[1] == "dummydata-obfuscated.csv"
 
@@ -115,7 +119,7 @@ class TestFunctionAlterData:
 
         for column in range(4):
             dummy_file[0].write_text(test_good_data)
-            target_path = alter_data([column], str(dummy_file[0]))
+            target_path = _alter_data([column], str(dummy_file[0]))
             with open(target_path, "r") as targetf:
 
                 for x in range(2):
@@ -128,7 +132,7 @@ class TestFunctionAlterData:
 
     def test_function_doesnt_remove_line_break_when_obfuscating(self, dummy_file):
         dummy_file[0].write_text(test_good_data)
-        target_path = alter_data([3], str(dummy_file[0]))
+        target_path = _alter_data([3], str(dummy_file[0]))
         with open(target_path, "r") as targetf:
             for x in range(2):
                 if x == 0:
@@ -142,9 +146,12 @@ class TestObfuscate:
     def test_function_returns_false_if_filepath_invalid(self):
         assert obfuscate(test_good_columns, 90210) is False
 
-    def test_function_returns_false_if_not_csv_extension(self, dummy_file):
-        bad_file = str(dummy_file[0]).replace("csv", "xls")
-        assert obfuscate(test_good_columns, bad_file) is False
+    def test_function_returns_false_if_not_csv_extension(self, tmp_path):
+        d = tmp_path / "sub"
+        d.mkdir()
+        p = d / "dummydata.xls"
+        p.write_text(test_good_data)
+        assert obfuscate(test_good_columns, str(p)) is False
 
     def test_function_returns_false_if_column_names_invalid(self, dummy_file):
         bad_columns = ["id", "firstname", "lastname", "Age"]

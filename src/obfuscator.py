@@ -3,20 +3,20 @@ import csv
 import string
 
 
-def filepath_validity(filepath):
+def _filepath_validity(filepath):
     if not isinstance(filepath, str) or not filepath:
         print(f'Filepath "{filepath}" is invalid, is of type {type(filepath)}')
         return False
 
-    try:
-        os.access(filepath, os.R_OK)
+    if os.access(filepath, os.R_OK) is True:
         print(f'Filepath "{filepath}" is readable...')
         return True
-    except:
+    else:
+        print(os.access(filepath, os.R_OK))
         raise Exception("File is unreadable")
 
 
-def is_csv(filepath):
+def _is_csv(filepath):
     print(f"Checking {filepath}...")
     if filepath.rsplit(".", 1)[1] != "csv":
         print(f'File "{filepath}" is not .csv')
@@ -40,7 +40,7 @@ def is_csv(filepath):
         return False
 
 
-def column_validity(columns, filepath):
+def _column_validity(columns, filepath):
     with open(filepath, "r") as file:
         check = file.readline().split(",")
         check[-1] = check[-1].replace("\n", "")
@@ -55,7 +55,7 @@ def column_validity(columns, filepath):
     return [True, column_idx]
 
 
-def alter_data(column_idx, filepath):
+def _alter_data(column_idx, filepath):
 
     target_path = filepath.rsplit(".", 1)
     target_path[0] += "-obfuscated."
@@ -85,17 +85,17 @@ def alter_data(column_idx, filepath):
 
 
 def obfuscate(columns, filepath):
-    if not filepath_validity(filepath):
+    if not _filepath_validity(filepath):
         return False
 
-    if not is_csv(filepath):
+    if not _is_csv(filepath):
         return False
 
-    columns = column_validity(columns, filepath)
+    columns = _column_validity(columns, filepath)
     if columns[0] is False:
         return False
 
-    endfile = alter_data(columns[1], filepath)
+    endfile = _alter_data(columns[1], filepath)
     return [
         endfile,
         f'Task Completed. Obfuscated data can be found in the file at "{endfile}"',
