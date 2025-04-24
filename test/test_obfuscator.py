@@ -12,6 +12,7 @@ import pytest
 test_good_data = "id,First Name,Last Name,Age\n1,aaa,aaa,20\n"
 test_good_columns = ["id", "First Name", "Last Name", "Age"]
 
+
 class TestFunctionFilepathValidity:
     def test_function_returns_false_if_input_is_not_string(self):
         arguments = [

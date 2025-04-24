@@ -42,6 +42,7 @@ def _call_csv_generator(filepath):
 
     return data_f
 
+
 def _call_obfuscator(columns, filepath):
     start = perf_counter()
     result = obfuscate(columns, filepath)
@@ -53,11 +54,10 @@ def _call_obfuscator(columns, filepath):
         print(f"Obfuscated file last modified: {os.path.getmtime(result[0])}")
         print(f"Obfuscated file size: {os.path.getsize(result[0])}\n")
 
+
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         filepath = sys.argv[1]
-        
+
     data_f = _call_csv_generator(filepath)
     _call_obfuscator(columns, data_f)
-
-

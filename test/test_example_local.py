@@ -70,5 +70,3 @@ class TestCallObfuscator:
         assert "Obfuscated file last modified:" in check[2]
         assert "Obfuscated file size" == check[3].rsplit(":", 1)[0]
         assert int(check[3].rsplit(":", 1)[1]) >= 0
-
-
