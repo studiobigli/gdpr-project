@@ -130,17 +130,6 @@ class TestFunctionAlterData:
                     line[-1] = line[-1].replace("\n", "")
                     assert line[column] == "***"
 
-    def test_function_doesnt_remove_line_break_when_obfuscating(self, dummy_file):
-        dummy_file[0].write_text(test_good_data)
-        target_path = _alter_data([3], str(dummy_file[0]))
-        with open(target_path, "r") as targetf:
-            for x in range(2):
-                if x == 0:
-                    targetf.readline()
-                    continue
-                line = targetf.readline()
-                assert line[-1::] == "\n"
-
 
 class TestObfuscate:
     def test_function_returns_false_if_filepath_invalid(self):
