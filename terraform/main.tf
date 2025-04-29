@@ -1,9 +1,18 @@
+#Requirements:
+#***Configure a provider
+#***Deploy backend s3
+#***Create S3 buckets code, ingest, output
+#***Create Zips for module and lambda script
+#***Create layer for module
+#***Deploy lambda script and module
+
+
 #Configure Provider
 
 terraform {
     required_providers {
         aws = {
-            source = "hashicorp/aws"
+           source = "hashicorp/aws"
             version = "~> 5.68.0"
         }
     }
@@ -15,16 +24,14 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    bucket = "lc-backend-gdpr"
     key = "terraform.tfstate"
-    region = "eu-west-2"
   }
 }
 
 #S3 buckets
 
 resource "aws_s3_bucket" "s3_code" {
-  bucket = "lc-gdpr-code"
+  bucket = "${var.prefix}-code"
   tags = {
     name = "s3_code"
     environment = "dev"
@@ -33,7 +40,7 @@ resource "aws_s3_bucket" "s3_code" {
 }
 
 resource "aws_s3_bucket" "s3_ingestion" {
-  bucket = "lc-gdpr-ingestion"
+  bucket = "${var.prefix}-ingestion"
   tags = {
     name = "s3_ingestion"
     environment = "dev"
@@ -41,8 +48,8 @@ resource "aws_s3_bucket" "s3_ingestion" {
   }
 }
 
-resource = "aws_s3_bucket" "s3_obfuscated" {
-  bucket = "lc-gdpr-obfuscated"
+resource "aws_s3_bucket" "s3_obfuscated" {
+  bucket = "${var.prefix}-obfuscated"
   tags = {
     name = "s3_obfuscated"
     environment = "dev"
