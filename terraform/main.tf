@@ -57,4 +57,96 @@ resource "aws_s3_bucket" "s3_obfuscated" {
   }
 }
 
+# Create lambda layer
 
+data "archive_file" "obfuscator_layer_file" {
+  type = "zip"
+  source_file = "${path.module}/${var.awslayer_obfuscator_file}"
+  output_path = "${path.module}/${var.tmp_location}/awslayer_obfuscator.zip"
+}
+
+resource "aws_s3_object" "obfuscator_layer" {
+  bucket = aws_s3_bucket.s3_code.bucket
+  key = "awslayer_obfuscator.zip"
+  source = data.archive_file.obfuscator_layer_file.output_path
+  etag = filemd5(data.archive_file.obfuscator_layer_file.output_path)
+  depends_on = [data.archive_file.obfuscator_layer_file]
+}
+
+resource "aws_lambda_layer_version" "obfuscator_layer" {
+  layer_name = "obfuscator_layer"
+  s3_bucket = aws_s3_object.obfuscator_layer.bucket
+  s3_key = aws_s3_object.obfuscator_layer.key
+}
+
+# Create lambda
+
+data "archive_file" "obfuscator_lambda_file" {
+  type = "zip"
+  source_file = "${path.module}/${var.obfuscator_lambda_file}"
+  output_path = "${path.module}/${var.tmp_location}/obfuscator_lambda.zip"
+}
+
+resource "aws_s3_object" "obfuscator_lambda" {
+  bucket = aws_s3_bucket.s3_code.bucket
+  key = "obfuscator_lambda.zip"
+  source = data.archive_file.obfuscator_lambda_file.output_path
+  etag = filemd5(data.archive_file.obfuscator_lambda_file.output_path)
+  depends_on = [data.archive_file.obfuscator_lambda_file]
+}
+
+resource "aws_lambda_function" "obfuscator_lambda" {
+  function_name = "obfuscator"
+  s3_bucket = aws_s3_bucket.s3_code.bucket
+  s3_key = aws_s3_object.obfuscator_lambda.key
+  role = aws_iam_role.role_obfuscator.arn
+  handler = "example_lambda.lambda_handler"
+  timeout = 180
+  source_code_hash = data.archive_file.obfuscator_lambda_file.output_base64sha256
+  runtime = "python3.12"
+  layers = [aws_lambda_layer_version.obfuscator_layer.arn]
+  #depends_on = ADD CLOUDWATCH FOR LOGGING
+}
+
+# Lambda IAM Policy
+
+data "aws_iam_policy_document" "policy_document_obfuscator" {
+  statement {
+    effect = "Allow"
+    actions = ["sts:AssumeRole"]
+    principals {
+      type = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "role_obfuscator" {
+  name = "role_obfuscator"
+  assume_role_policy = data.aws_iam_policy_document.policy_document_obfuscator.json
+}
+
+resource "aws_iam_policy" "policy_obfuscator" {
+  name = "policy_obfuscator"
+  description = "IAM policy for Lambda to access S3 buckets"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = ["s3:GetObject", "s3:PutObject"],
+        Effect = "Allow",
+        Resource = "arn:aws:s3:::${aws_s3_bucket.s3_code.bucket}/*"
+      },
+      {
+        Action = ["s3:PutObject"],
+        Effect = "Allow",
+        Resource = "arn:aws:s3:::${aws_s3_bucket.s3_obfuscated.bucket}/*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "policy_obfuscator_attachment" {
+  role = aws_iam_role.role_obfuscator.name
+  policy_arn = aws_iam_policy.policy_obfuscator.arn
+}
