@@ -59,24 +59,28 @@ resource "aws_s3_bucket" "s3_obfuscated" {
 
 # Create lambda layer
 
-data "archive_file" "obfuscator_layer_file" {
+data "archive_file" "layer_obfuscator_zip" {
   type = "zip"
-  source_file = "${path.module}/${var.awslayer_obfuscator_file}"
-  output_path = "${path.module}/${var.tmp_location}/awslayer_obfuscator.zip"
+  source_dir = "${path.module}/../tmp/layer_obfuscator"
+  output_path = "${path.module}/../tmp/layer_obfuscator.zip"
 }
 
-resource "aws_s3_object" "obfuscator_layer" {
+resource "aws_s3_object" "layer_obfuscator" {
   bucket = aws_s3_bucket.s3_code.bucket
   key = "awslayer_obfuscator.zip"
-  source = data.archive_file.obfuscator_layer_file.output_path
-  etag = filemd5(data.archive_file.obfuscator_layer_file.output_path)
-  depends_on = [data.archive_file.obfuscator_layer_file]
+  source = data.archive_file.layer_obfuscator_zip.output_path
+  etag = filemd5(data.archive_file.layer_obfuscator_zip.output_path)
+  depends_on = [data.archive_file.layer_obfuscator_zip]
 }
 
-resource "aws_lambda_layer_version" "obfuscator_layer" {
-  layer_name = "obfuscator_layer"
-  s3_bucket = aws_s3_object.obfuscator_layer.bucket
-  s3_key = aws_s3_object.obfuscator_layer.key
+resource "aws_lambda_layer_version" "layer_obfuscator" {
+  layer_name = "layer_obfuscator"
+  s3_bucket = aws_s3_object.layer_obfuscator.bucket
+  s3_key = aws_s3_object.layer_obfuscator.key
+  s3_object_version = aws_s3_object.layer_obfuscator.version_id
+  source_code_hash = data.archive_file.layer_obfuscator_zip.output_base64sha256
+  description = "Layer containing obfuscator library"
+  compatible_runtimes = ["python3.12"]
 }
 
 # Create lambda
@@ -104,7 +108,7 @@ resource "aws_lambda_function" "obfuscator_lambda" {
   timeout = 180
   source_code_hash = data.archive_file.obfuscator_lambda_file.output_base64sha256
   runtime = "python3.12"
-  layers = [aws_lambda_layer_version.obfuscator_layer.arn]
+  layers = [aws_lambda_layer_version.layer_obfuscator.arn]
   #depends_on = ADD CLOUDWATCH FOR LOGGING
 }
 

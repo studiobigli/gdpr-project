@@ -16,6 +16,7 @@ variable "tmp_location" {
   description = "Location of files generated for deployment"
 }
 
+
 variable "obfuscator_lambda_file" {
   type = string
   default = "../src/example_lambda.py"
