@@ -2,7 +2,7 @@ from src.example_local import _call_csv_generator, _call_obfuscator
 
 import pytest
 
-test_good_data = "id,First Name,Last Name,Age\n1,aaa,aaa,20\n"
+test_good_data = "id,First Name,Last Name,Age\n1,aaa,aaa,20\n2,bbb,bbb,302"
 test_good_columns = ["id", "First Name", "Last Name", "Age"]
 
 
@@ -36,7 +36,7 @@ class TestCallCSVGenerator:
 
 
 class TestCallObfuscator:
-    def test_function_aborts_on_invalid_filepath(self, dummy_file):
+    def test_function_aborts_on_invalid_input_filepath(self, dummy_file):
         bad_file = str(dummy_file[0]).replace("csv", "xls")
         dummy_file[0].write_text(test_good_data)
 

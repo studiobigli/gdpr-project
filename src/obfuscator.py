@@ -1,34 +1,36 @@
 import os
 import csv
 import string
+import io
 
 
-def _filepath_validity(filepath):
-    if not isinstance(filepath, str) or not filepath:
-        print(f'Filepath "{filepath}" is invalid, is of type {type(filepath)}')
+def _filepath_validity(i_filepath):
+    if not isinstance(i_filepath, str) or not i_filepath:
+        print(
+            f'Input filepath "{i_filepath}" is invalid, is of type {type(i_filepath)}'
+        )
         return False
 
-    if os.access(filepath, os.R_OK) is True:
-        print(f'Filepath "{filepath}" is readable...')
+    if os.access(i_filepath, os.R_OK) is True:
+        print(f'Input filepath "{i_filepath}" is readable...')
         return True
     else:
-        print(os.access(filepath, os.R_OK))
+        print(os.access(i_filepath, os.R_OK))
         raise Exception("File is unreadable")
 
 
-def _is_csv(filepath):
-    print(f"Checking {filepath}...")
-    if filepath.rsplit(".", 1)[1] != "csv":
-        print(f'File "{filepath}" is not .csv')
+def _is_csv(i_filepath):
+    print(f"Checking {i_filepath}...")
+    if i_filepath.rsplit(".", 1)[1] != "csv":
+        print(f'File "{i_filepath}" is not .csv')
         return False
 
     try:
-        with open(filepath, newline="\n") as file:
+        with open(i_filepath, newline="\n") as file:
             check = file.read(8192)
 
             dialect = csv.Sniffer().sniff(check)
 
-            # Consider checking more details of the CSV dialect to prevent issues
             if dialect.delimiter != ",":
                 print("Dialect delimiter incorrect")
                 return False
@@ -40,8 +42,8 @@ def _is_csv(filepath):
         return False
 
 
-def _column_validity(columns, filepath):
-    with open(filepath, "r") as file:
+def _column_validity(columns, i_filepath):
+    with open(i_filepath, "r") as file:
         check = file.readline().split(",")
         check[-1] = check[-1].replace("\n", "")
 
@@ -55,36 +57,33 @@ def _column_validity(columns, filepath):
     return [True, column_idx]
 
 
-def _alter_data(column_idx, filepath):
-
-    target_path = filepath.rsplit(".", 1)
-    target_path[0] += "-obfuscated."
-    target_path = "".join(target_path)
-    print(f'Writing to "{target_path}"...')
-
-    with open(filepath, "r") as sourcef:
+def _alter_data(column_idx, i_filepath):
+    with open(i_filepath, "r") as sourcef:
         doc_length = sourcef.readlines()
 
-    with open(filepath, "r") as sourcef:
-        with open(target_path, "w") as targetf:
-
+    with open(i_filepath, "r") as sourcef:
+        with io.BytesIO() as targetf:
             for line in range(len(doc_length)):
                 if line == 0:
-                    targetf.write(sourcef.readline())
+                    targetf.write(bytes(sourcef.readline(), "utf-8"))
                     continue
                 source_line = sourcef.readline().split(",")
                 source_line[-1].replace("\n", "")
 
                 for idx, x in enumerate(source_line):
                     if idx in column_idx:
-                        source_line[idx] = "***"
+                        if source_line[idx] is source_line[-1]:
+                            source_line[idx] = "***\n"
+                        else:
+                            source_line[idx] = "***"
 
-                targetf.write(",".join(source_line))
+                targetf.write(bytes(",".join(source_line), "utf-8"))
 
-    return target_path
+            targetf.seek(0)
+            return targetf.getvalue()
 
 
-def obfuscate(columns, filepath):
+def obfuscate(columns, i_filepath):
     """
     Takes the data from a CSV file and a list of column names and replaces the
     data under those columns with the string '***'. The data is then stored in
@@ -94,26 +93,24 @@ def obfuscate(columns, filepath):
     Parameters:
     columns (list of str): A list containing the names of columns whose data
     should be obfuscated.
-    filepath (str): A string containing the filepath of the CSV file to be
+    i_filepath (str): A string containing the filepath of the CSV file to be
     processed.
 
     Returns:
-    list of str: First string is the filepath of the CSV with the obfuscated
-    data. Second string is a confirmation of this filepath location.
+    endfile (byte stream): A byte stream containing the obfuscated CSV data
+    ready for the calling python script to handle as the user sees fit.
     """
 
-    if not _filepath_validity(filepath):
+    if not _filepath_validity(i_filepath):
         return False
 
-    if not _is_csv(filepath):
+    if not _is_csv(i_filepath):
         return False
 
-    columns = _column_validity(columns, filepath)
+    columns = _column_validity(columns, i_filepath)
     if columns[0] is False:
         return False
 
-    endfile = _alter_data(columns[1], filepath)
-    return [
-        endfile,
-        f'Task Completed. Obfuscated data can be found in the file at "{endfile}"',
-    ]
+    endfile = _alter_data(columns[1], i_filepath)
+
+    return endfile

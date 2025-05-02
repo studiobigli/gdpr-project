@@ -5,7 +5,7 @@ import csv
 import os
 import sys
 
-filepath = ""
+i_filepath = ""
 
 
 class LanguageProvider(BaseProvider):
@@ -73,32 +73,31 @@ def _generate_data():
     ]
 
 
-def fake_csv(filepath):
+def fake_csv(i_filepath):
 
-    if not isinstance(filepath, str) or not filepath:
-        filepath = "../dummydata.csv"
-        print(f"Filepath not included, defaulting to {filepath}\n")
+    if not isinstance(i_filepath, str) or not i_filepath:
+        i_filepath = "../dummydata.csv"
+        print(f"Filepath not included, defaulting to {i_filepath}\n")
 
-    check = filepath.rsplit(".", 1)[1]
+    check = i_filepath.rsplit(".", 1)[1]
     if check != "csv":
         raise Exception("Target file is not .csv extension")
 
-    if os.access(filepath, os.F_OK) is True:
-        if os.access(filepath, os.W_OK) is False:
-            print(f"File {filepath} exists and is not writeable, Aborting")
+    if os.access(i_filepath, os.F_OK) is True:
+        if os.access(i_filepath, os.W_OK) is False:
+            print(f"File {i_filepath} exists and is not writeable, Aborting")
             sys.exit()
         else:
             overwrite = ""
             while overwrite != "y" and overwrite != "n":
-                print(f"{overwrite=}")
                 overwrite = input(
-                    f"File {filepath} already exists, overwrite? (y/n):"
+                    f"File {i_filepath} already exists, overwrite? (y/n):"
                 ).lower()
             if overwrite != "y":
                 print("Closing...")
                 sys.exit()
 
-    with open(filepath, "w", newline="") as csvfile:
+    with open(i_filepath, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(
             [
@@ -121,15 +120,14 @@ def fake_csv(filepath):
         )
         file_size = 0
         while file_size < 1:
-            file_size = os.stat(filepath).st_size / (1024 * 1024)
+            file_size = os.stat(i_filepath).st_size / (1024 * 1024)
             writer.writerow(_generate_data())
 
-        return filepath
+        return i_filepath
 
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        filepath = sys.argv[1]
+        i_filepath = sys.argv[1]
 
-    print(filepath)
-    fake_csv(filepath)
+    fake_csv(i_filepath)
