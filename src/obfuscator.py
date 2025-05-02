@@ -31,7 +31,6 @@ def _is_csv(i_filepath):
 
             dialect = csv.Sniffer().sniff(check)
 
-            # Consider checking more details of the CSV dialect to prevent issues
             if dialect.delimiter != ",":
                 print("Dialect delimiter incorrect")
                 return False
@@ -77,8 +76,6 @@ def _alter_data(column_idx, i_filepath):
                             source_line[idx] = "***\n"
                         else:
                             source_line[idx] = "***"
-                    # if source_line[-1] == "***":
-                    # source_line[-1] = "***\n"
 
                 targetf.write(bytes(",".join(source_line), "utf-8"))
 
@@ -98,11 +95,10 @@ def obfuscate(columns, i_filepath):
     should be obfuscated.
     i_filepath (str): A string containing the filepath of the CSV file to be
     processed.
-    o_filepath (str): A string containing the intended destination of the obfuscated CSV file.
 
-    Returns: (CHANGE)
-    list of str: First string is the i_filepath of the CSV with the obfuscated
-    data. Second string is a confirmation of this i_filepath location.
+    Returns:
+    endfile (byte stream): A byte stream containing the obfuscated CSV data
+    ready for the calling python script to handle as the user sees fit.
     """
 
     if not _filepath_validity(i_filepath):
@@ -116,9 +112,5 @@ def obfuscate(columns, i_filepath):
         return False
 
     endfile = _alter_data(columns[1], i_filepath)
-    # return [
-    #    endfile,
-    #    f'Task Completed. Obfuscated data can be found in the file at "{endfile}"',
-    # ]
 
     return endfile

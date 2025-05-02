@@ -11,10 +11,10 @@ Sample program to demonstrate functionality of obfuscator.py
 
 To run, ensure PYTHONPATH is set to the project directory. Then:
 
-    python src/example_local.py FILEPATH
+    python src/example_local.py FILE_PATH OBFUSCATED_PATH
 
-FILEPATH referring to your preferred destination for sample CSV and
-obfuscated CSV files.
+FILE_PATH referring to your preferred destination for sample CSV and
+OBFUSCATED_PATH for preffered destination for obfuscated CSV files.
 """
 
 i_filepath = ""
@@ -88,7 +88,6 @@ if __name__ == "__main__":
             )
         ]
         columns = inquirer.prompt(questions)["columns"]
-        print(columns)
         if not columns:
             sys.exit()
 

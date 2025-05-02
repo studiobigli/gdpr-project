@@ -49,7 +49,6 @@ class TestCallObfuscator:
 
         _call_obfuscator(test_good_columns, str(dummy_file[0]))
         capture = capsys.readouterr()
-        print(capture.out)
         check = capture.out.split("\n")
         while "Obfuscated file" not in check[0]:
             check.pop(0)

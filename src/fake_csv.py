@@ -90,7 +90,6 @@ def fake_csv(i_filepath):
         else:
             overwrite = ""
             while overwrite != "y" and overwrite != "n":
-                print(f"{overwrite=}")
                 overwrite = input(
                     f"File {i_filepath} already exists, overwrite? (y/n):"
                 ).lower()
@@ -131,5 +130,4 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         i_filepath = sys.argv[1]
 
-    print(i_filepath)
     fake_csv(i_filepath)
