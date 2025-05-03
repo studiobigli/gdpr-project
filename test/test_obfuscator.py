@@ -59,22 +59,28 @@ class TestFunctionColumnValidity:
     ):
         dummy_file[0].write_text(test_good_data)
         columns = ["id", "firstname", "lastname", "age"]
-        assert _column_validity(columns, dummy_file[0]) == [False, []]
+        stream = Bytestream(str(dummy_file[0]))
+        assert _column_validity(columns, stream.buf) == [False, []]
+        stream.close()
 
     def test_function_returns_true_and_column_indexes_if_input_matches(
         self, dummy_file
     ):
         dummy_file[0].write_text(test_good_data)
-        assert _column_validity(test_good_columns, dummy_file[0]) == [
+        stream = Bytestream(str(dummy_file[0]))
+        assert _column_validity(test_good_columns, stream.buf) == [
             True,
             [0, 1, 2, 3],
         ]
+        stream.close()
 
 
 class TestFunctionAlterData:
     def test_function_creates_readable_byte_stream(self, dummy_file):
         dummy_file[0].write_text(test_good_data)
-        result = _alter_data(test_good_columns, str(dummy_file[0]))
+        stream = Bytestream(str(dummy_file[0]))
+        result = _alter_data(test_good_columns, stream.buf)
+        stream.close()
 
         assert isinstance(result, bytes)
         assert result.decode("utf-8") == test_good_data
@@ -86,7 +92,8 @@ class TestFunctionAlterData:
 
         for column in range(4):
             dummy_file[0].write_text(test_good_data)
-            result = _alter_data([column], str(dummy_file[0]))
+            stream = Bytestream(str(dummy_file[0]))
+            result = _alter_data([column], stream.buf)
             with open(str(dummy_output_file[0]), "wb") as output_f:
                 output_f.write(result)
 
