@@ -4,51 +4,38 @@ import string
 import io
 
 
-def _filepath_validity(i_filepath):
-    if not isinstance(i_filepath, str) or not i_filepath:
-        print(
-            f'Input filepath "{i_filepath}" is invalid, is of type {type(i_filepath)}'
-        )
-        return False
-
-    if os.access(i_filepath, os.R_OK) is True:
-        print(f'Input filepath "{i_filepath}" is readable...')
-        return True
-    else:
-        print(os.access(i_filepath, os.R_OK))
-        raise Exception("File is unreadable")
-
-
-def _is_csv(i_filepath):
-    print(f"Checking {i_filepath}...")
-    if i_filepath.rsplit(".", 1)[1] != "csv":
-        print(f'File "{i_filepath}" is not .csv')
-        return False
+def _is_csv(i_data):
+    print(f"Checking {i_data}...")
 
     try:
-        with open(i_filepath, newline="\n") as file:
-            check = file.read(8192)
+        #with open(i_data, newline="\n") as file:
+        check = i_data.read(8192)
+        i_data.seek(0)
+        check = check.decode('utf-8')
+        #print(check)
+        dialect = csv.Sniffer().sniff(check)
+        
+        if dialect.delimiter != ",":
+            print("Dialect delimiter incorrect")
+            return False
+        
+        return True
 
-            dialect = csv.Sniffer().sniff(check)
-
-            if dialect.delimiter != ",":
-                print("Dialect delimiter incorrect")
-                return False
-
-            return True
-
+       
     except csv.Error:
         print(f"File does not appear to contain correct .csv data")
         return False
 
 
-def _column_validity(columns, i_filepath):
-    with open(i_filepath, "r") as file:
-        check = file.readline().split(",")
-        check[-1] = check[-1].replace("\n", "")
+def _column_validity(columns, i_data):
+    print(i_data)
+    i_data.seek(0)
+    check = i_data.readline().decode('utf-8').split(',')
+    check[-1] = check[-1].replace("\r\n", "").replace("\n", "")
 
     for x in columns:
         if x not in check:
+            print(x, check)
             print(f"Column {x} not in CSV file, aborting.")
             return [False, []]
 
@@ -57,30 +44,30 @@ def _column_validity(columns, i_filepath):
     return [True, column_idx]
 
 
-def _alter_data(column_idx, i_filepath):
-    with open(i_filepath, "r") as sourcef:
-        doc_length = sourcef.readlines()
+def _alter_data(column_idx, i_data):
+    i_data.seek(0)
+    doc_length = i_data.readlines()
+    i_data.seek(0)
 
-    with open(i_filepath, "r") as sourcef:
-        with io.BytesIO() as targetf:
-            for line in range(len(doc_length)):
-                if line == 0:
-                    targetf.write(bytes(sourcef.readline(), "utf-8"))
-                    continue
-                source_line = sourcef.readline().split(",")
-                source_line[-1].replace("\n", "")
+    with io.BytesIO() as targetf:
+        for line in range(len(doc_length)):
+            if line == 0:
+                targetf.write(bytes(i_data.readline().decode('utf-8'), "utf-8"))
 
-                for idx, x in enumerate(source_line):
-                    if idx in column_idx:
-                        if source_line[idx] is source_line[-1]:
-                            source_line[idx] = "***\n"
-                        else:
-                            source_line[idx] = "***"
+            source_line = i_data.readline().decode('utf-8').split(",")
+            source_line[-1].replace("\n", "")
 
-                targetf.write(bytes(",".join(source_line), "utf-8"))
+            for idx, x in enumerate(source_line):
+                if idx in column_idx:
+                    if source_line[idx] is source_line[-1]:
+                        source_line[idx] = "***\n"
+                    else:
+                        source_line[idx] = "***"
 
-            targetf.seek(0)
-            return targetf.getvalue()
+            targetf.write(bytes(",".join(source_line), "utf-8"))
+
+        targetf.seek(0)
+        return targetf.getvalue()
 
 
 def obfuscate(columns, i_filepath):
@@ -100,9 +87,6 @@ def obfuscate(columns, i_filepath):
     endfile (byte stream): A byte stream containing the obfuscated CSV data
     ready for the calling python script to handle as the user sees fit.
     """
-
-    if not _filepath_validity(i_filepath):
-        return False
 
     if not _is_csv(i_filepath):
         return False

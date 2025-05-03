@@ -1,4 +1,4 @@
-from src.example_local import _call_csv_generator, _call_obfuscator
+from src.example_local import _call_csv_generator, _call_obfuscator, _create_byte_stream
 
 import pytest
 
@@ -36,18 +36,11 @@ class TestCallCSVGenerator:
 
 
 class TestCallObfuscator:
-    def test_function_aborts_on_invalid_input_filepath(self, dummy_file):
-        bad_file = str(dummy_file[0]).replace("csv", "xls")
-        dummy_file[0].write_text(test_good_data)
-
-        with pytest.raises(Exception) as e:
-            _call_obfuscator(test_good_columns, bad_file)
-        assert f"File is unreadable" in str(e.value)
-
     def test_function_returns_file_data_on_success(self, dummy_file, capsys):
         dummy_file[0].write_text(test_good_data)
 
-        _call_obfuscator(test_good_columns, str(dummy_file[0]))
+        byte_stream = _create_byte_stream(str(dummy_file[0]))
+        _call_obfuscator(test_good_columns, str(dummy_file[0]), byte_stream  )
         capture = capsys.readouterr()
         check = capture.out.split("\n")
         while "Obfuscated file" not in check[0]:
