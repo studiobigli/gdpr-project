@@ -12,11 +12,12 @@ import io
 test_good_data = "id,First Name,Last Name,Age\n1,aaa,aaa,20\n2,bbb,bbb,302"
 test_good_columns = ["id", "First Name", "Last Name", "Age"]
 
+
 class Bytestream(io.BytesIO):
     def __init__(self, i_filepath):
         io.BytesIO.__init__(self)
         self.buf = io.BytesIO()
-        with open(i_filepath, 'rb') as sourcef:
+        with open(i_filepath, "rb") as sourcef:
             shutil.copyfileobj(sourcef, self.buf)
         self.buf.seek(0)
 
@@ -52,6 +53,7 @@ class TestFunctionIsCSV:
         stream = Bytestream(str(dummy_file[0]))
         assert _is_csv(stream.buf) is True
         stream.close()
+
 
 class TestFunctionColumnValidity:
     def test_function_returns_false_and_empty_list_if_input_columns_doesnt_match_data(

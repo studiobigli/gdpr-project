@@ -40,7 +40,7 @@ class TestCallObfuscator:
         dummy_file[0].write_text(test_good_data)
 
         byte_stream = _create_byte_stream(str(dummy_file[0]))
-        _call_obfuscator(test_good_columns, str(dummy_file[0]), byte_stream  )
+        _call_obfuscator(test_good_columns, str(dummy_file[0]), byte_stream)
         capture = capsys.readouterr()
         check = capture.out.split("\n")
         while "Obfuscated file" not in check[0]:

@@ -8,20 +8,17 @@ def _is_csv(i_data):
     print(f"Checking {i_data}...")
 
     try:
-        #with open(i_data, newline="\n") as file:
         check = i_data.read(8192)
         i_data.seek(0)
-        check = check.decode('utf-8')
-        #print(check)
+        check = check.decode("utf-8")
         dialect = csv.Sniffer().sniff(check)
-        
+
         if dialect.delimiter != ",":
             print("Dialect delimiter incorrect")
             return False
-        
+
         return True
 
-       
     except csv.Error:
         print(f"File does not appear to contain correct .csv data")
         return False
@@ -30,7 +27,7 @@ def _is_csv(i_data):
 def _column_validity(columns, i_data):
     print(i_data)
     i_data.seek(0)
-    check = i_data.readline().decode('utf-8').split(',')
+    check = i_data.readline().decode("utf-8").split(",")
     check[-1] = check[-1].replace("\r\n", "").replace("\n", "")
 
     for x in columns:
@@ -52,9 +49,9 @@ def _alter_data(column_idx, i_data):
     with io.BytesIO() as targetf:
         for line in range(len(doc_length)):
             if line == 0:
-                targetf.write(bytes(i_data.readline().decode('utf-8'), "utf-8"))
+                targetf.write(bytes(i_data.readline().decode("utf-8"), "utf-8"))
 
-            source_line = i_data.readline().decode('utf-8').split(",")
+            source_line = i_data.readline().decode("utf-8").split(",")
             source_line[-1].replace("\n", "")
 
             for idx, x in enumerate(source_line):

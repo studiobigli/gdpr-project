@@ -32,6 +32,7 @@ columns = [
     "Date of Birth",
 ]
 
+
 def _call_csv_generator(i_filepath):
     start = perf_counter()
     data_f = fake_csv(i_filepath)
@@ -45,23 +46,14 @@ def _call_csv_generator(i_filepath):
 
     return data_f
 
-def _create_byte_stream(i_filepath):
-    
-    #with open(i_filepath, "r") as sourcef:
-    #    doc_length = sourcef.readlines()
-    #    sourcef.seek(0)
-    # 
-    #   with io.BytesIO() as i_data:
-    #       for line in range(len(doc_length)):
-    #           i_data.write(bytes(sourcef.readline(), "utf-8"))
-    #       
-    #       return i_data.getvalue()
 
+def _create_byte_stream(i_filepath):
     buf = io.BytesIO()
-    with open(i_filepath, 'rb') as sourcef:
+    with open(i_filepath, "rb") as sourcef:
         shutil.copyfileobj(sourcef, buf)
     buf.seek(0)
     return buf
+
 
 def _call_obfuscator(columns, i_filepath, i_byte_stream, o_filepath=""):
     start = perf_counter()
@@ -91,7 +83,7 @@ if __name__ == "__main__":
         o_filepath = sys.argv[2]
 
     data_f = _call_csv_generator(i_filepath)
-    
+
     data_columns = []
     with open(data_f, "r") as f:
         check = f.readline().split(",")
@@ -112,5 +104,4 @@ if __name__ == "__main__":
 
         byte_stream = _create_byte_stream(data_f)
 
-        
         _call_obfuscator(columns, i_filepath, byte_stream, o_filepath)
