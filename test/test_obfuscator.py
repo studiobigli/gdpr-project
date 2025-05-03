@@ -109,14 +109,9 @@ class TestFunctionAlterData:
 
 
 class TestObfuscate:
-    def test_function_returns_false_if_not_csv_extension(self, tmp_path):
-        d = tmp_path / "sub"
-        d.mkdir()
-        p = d / "dummydata.xls"
-        p.write_text(test_good_data)
-        assert obfuscate(test_good_columns, str(p)) is False
-
     def test_function_returns_false_if_column_names_invalid(self, dummy_file):
         bad_columns = ["id", "firstname", "lastname", "Age"]
         dummy_file[0].write_text(test_good_data)
-        assert obfuscate(bad_columns, str(dummy_file[0])) is False
+        stream = Bytestream(str(dummy_file[0]))
+        assert obfuscate(bad_columns, stream.buf) is False
+        stream.close()
