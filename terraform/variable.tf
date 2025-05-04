@@ -29,3 +29,9 @@ variable "awslayer_obfuscator_file" {
   description = "Obfuscator source file"
 }
 
+variable "dummy_csv_file" {
+  type = string
+  default = "../tmp/dummydata.csv"
+  description = "Placeholder CSV file for obfuscating"
+}
+

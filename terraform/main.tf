@@ -110,6 +110,33 @@ resource "aws_lambda_function" "obfuscator_lambda" {
   runtime = "python3.12"
   layers = [aws_lambda_layer_version.layer_obfuscator.arn]
   #depends_on = ADD CLOUDWATCH FOR LOGGING
+  environment {
+    variables = {
+      INGESTION_BUCKET = aws_s3_bucket.s3_ingestion.bucket
+      OBFUSCATED_BUCKET = aws_s3_bucket.s3_obfuscated.bucket
+      INGESTION_KEY = aws_s3_object.csv_dummydata.key
+    }
+  }
+}
+
+# Lambda permissions to automatically run on upload to ingestion bucket
+
+resource "aws_lambda_permission" "execute_from_ingestion_s3" {
+  statement_id = "AllowExecutionFromS3Bucket"
+  action = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.obfuscator_lambda.arn
+  principal = "s3.amazonaws.com"
+  source_arn = aws_s3_bucket.s3_ingestion.arn
+}
+
+resource "aws_s3_bucket_notification" "s3_notification" {
+  bucket = aws_s3_bucket.s3_ingestion.id
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.obfuscator_lambda.arn
+    events = ["s3:ObjectCreated:*"]
+    filter_suffix = "-fields.json"
+  }
+  depends_on = [aws_lambda_permission.execute_from_ingestion_s3]
 }
 
 # Lambda IAM Policy
@@ -142,6 +169,11 @@ resource "aws_iam_policy" "policy_obfuscator" {
         Resource = "arn:aws:s3:::${aws_s3_bucket.s3_code.bucket}/*"
       },
       {
+        Action = ["s3:GetObject", "s3:DeleteObject" "s3:PutObject"],
+        Effect = "Allow",
+        Resource = "arn:aws:s3:::${aws_s3_bucket.s3_ingestion.bucket}/*"
+      },
+      {
         Action = ["s3:PutObject"],
         Effect = "Allow",
         Resource = "arn:aws:s3:::${aws_s3_bucket.s3_obfuscated.bucket}/*"
@@ -154,3 +186,13 @@ resource "aws_iam_role_policy_attachment" "policy_obfuscator_attachment" {
   role = aws_iam_role.role_obfuscator.name
   policy_arn = aws_iam_policy.policy_obfuscator.arn
 }
+
+# Upload dummy CSV file
+
+resource "aws_s3_object" "csv_dummydata" {
+  bucket = aws_s3_bucket.s3_ingestion.bucket
+  key = "dummydata.csv"
+  source = "${var.dummy_csv_file}"
+  etag = filemd5("${var.dummy_csv_file}")
+}
+
