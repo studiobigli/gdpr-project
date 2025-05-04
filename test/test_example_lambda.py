@@ -56,3 +56,17 @@ class TestFunctionLambdaHandler:
 
         assert response["response"] == 500
 
+class TestOutputData:
+    def test_obfuscated_file_contains_correct_data(self, dummy_s3):
+        check_data = "id,First Name,Last Name,Age\n1,***,aaa,***\n2,***,bbb,***\n"
+        test_event = {
+            "bucket": "test-ingestion",
+            "key": "dummy.csv",
+            "fields": ["First Name", "Age"],
+        }
+
+        response = lambda_handler(test_event, {})
+        obj = dummy_s3.get_object(Bucket="test-obfuscated", Key="dummy-obfuscated.csv")
+        assert obj['Body'].read().decode('utf-8') == check_data 
+
+
