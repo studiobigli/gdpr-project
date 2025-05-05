@@ -19,7 +19,7 @@ It is required to have the following installed and configured as per your use ca
 
 Open a terminal and clone the repo with the following command:
 ```
-https://github.com/studiobigli/gdpr-project.git
+git clone https://github.com/studiobigli/gdpr-project.git
 ```
 
 A Makefile can be called to create the virtual environment and install dependencies with (from the root folder of the project):
