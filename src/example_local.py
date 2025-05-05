@@ -1,4 +1,4 @@
-from src.obfuscator import obfuscate
+from obfuscator import obfuscate
 from src.fake_csv import fake_csv
 from time import perf_counter
 
@@ -71,7 +71,10 @@ def _call_obfuscator(columns, i_filepath, i_byte_stream, o_filepath=""):
     t = perf_counter() - start
 
     if os.path.isfile(o_filepath):
-        print(f'Obfuscated file at "{o_filepath}" generated in {t:.6f} seconds')
+        print(
+            'Obfuscated file at "{}" generated in {:.6f} seconds'
+            .format(o_filepath, t)
+        )
         print(f"Obfuscated file creation date: {os.path.getctime(o_filepath)}")
         print(f"Obfuscated file last modified: {os.path.getmtime(o_filepath)}")
         print(f"Obfuscated file size: {os.path.getsize(o_filepath)}\n")
