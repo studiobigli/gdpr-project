@@ -107,6 +107,7 @@ Outside of the requirements, I aimed to prevent situations where the CSV data co
 
 I would like to continue working on the project and provide further examples of my understanding in how such a library could be handled.
 
+- Make obfuscator deployable via pip (create .whl file)
 - Create a web interface to allow the uploading of a CSV file, reading the available columns and allowing the user to choose which to obfuscate, obfuscating this data and returning the process CSV file to the user for immediate download.
 - Demonstrate the library's use outside of local scripts and AWS lambdas
 - Fully unit test all example scripts.
