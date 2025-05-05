@@ -89,7 +89,8 @@ run-checks: security-test run-flake8 unit-test check-coverage check-terraform
 
 ## Prepare lambda layers
 layer-setup:
-	$(call execute_in_env, cp -r ${WD}/src/obfuscator \
+	$(call execute_in_env, mkdir -p ${WD}/tmp/layer_obfuscator/python && \
+					cp -r ${WD}/src/obfuscator \
 					${WD}/tmp/layer_obfuscator/python/ && \
 					echo "Obfuscator library ready for Terraform deployment")
 
