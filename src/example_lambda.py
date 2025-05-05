@@ -1,4 +1,5 @@
 from src.obfuscator import obfuscate
+from botocore.exceptions import ClientError
 import boto3
 import json
 import io
@@ -9,14 +10,10 @@ def lambda_handler(event, context):
     try:
         metadata_filepath = []
         i_filepath = []
-        
+
         metadata_filepath.append(os.environ["INGESTION_BUCKET"])
         i_filepath.append(os.environ["INGESTION_BUCKET"])
-
-        if event["Records"][0]["s3"]["object"]["key"]:
-            metadata_filepath.append(event["Records"][0]["s3"]["object"]["key"])
-        else:
-            metadata_filepath.append(os.environ["INGESTION_KEY"])
+        metadata_filepath.append(event["Records"][0]["s3"]["object"]["key"])
 
         s3 = boto3.client("s3")
 
@@ -25,26 +22,26 @@ def lambda_handler(event, context):
                 Bucket=metadata_filepath[0], Key=metadata_filepath[1]
             )
             metadata = json.loads(metadata_file["Body"].read().decode("utf-8"))
-        except Exception as e:
-            print(e)
-            print(f"Error getting metadata file {key} from bucket {bucket}.")
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'NoSuchKey':
+                print("No Such Key")
             raise e
+
 
         columns = metadata["fields"]
         i_filepath.append(metadata["key"])
         byte_stream = io.BytesIO()
+
         try:
             s3.download_fileobj(
-                Bucket=os.environ["INGESTION_BUCKET"],
-                Key=os.environ["INGESTION_KEY"],
+                Bucket=i_filepath[0],
+                Key=i_filepath[1],
                 Fileobj=byte_stream,
             )
             byte_stream.seek(0)
-        except Exception as e:
-            print(e)
-            print(
-                "Error getting CSV file {key} from bucket {bucket}. Make sure they exist and your metadata file refers to the correct key."
-            )
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'NoSuchKey':
+                print("No Such Key")
             raise e
 
         result = obfuscate(columns, byte_stream)

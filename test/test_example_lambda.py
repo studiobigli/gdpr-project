@@ -1,6 +1,6 @@
 from moto import mock_aws
 from src.example_lambda import lambda_handler
-
+from botocore.exceptions import ClientError 
 import boto3
 import pytest
 import os
@@ -27,13 +27,15 @@ def dummy_s3():
             CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
         )
         s3.put_object(Bucket=ingestion_bucket, Body=test_good_data, Key=test_key)
-        s3.put_object(Bucket=ingestion_bucket, Body=test_metadata, Key=test_metadata_key)
+        s3.put_object(
+            Bucket=ingestion_bucket, Body=test_metadata, Key=test_metadata_key
+        )
         s3.create_bucket(
             Bucket=obfuscated_bucket,
             CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
         )
         yield s3
-        
+
 
 class TestFunctionLambdaHandler:
     def test_function_creates_obfuscated_csv_in_target_bucket(self, dummy_s3):
@@ -54,6 +56,17 @@ class TestFunctionLambdaHandler:
         response = lambda_handler(test_event, {})
 
         assert response["response"] == 500
+
+    def test_function_raises_exception_if_metadata_file_missing(self, dummy_s3):
+        with open("test/event.json", "r") as event_file:
+            test_event = json.load(event_file)
+
+        dummy_s3.delete_object(Bucket="test-ingestion", Key="dummy-fields.json")
+        result = lambda_handler(test_event, {})
+        
+        assert "NoSuchKey" in str(result["error"])
+        assert result["response"] == 500
+            
 
 
 class TestOutputData:
