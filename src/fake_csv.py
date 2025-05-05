@@ -11,7 +11,14 @@ i_filepath = ""
 class LanguageProvider(BaseProvider):
     def language(self):
         return random.choice(
-            ["English", "Chinese", "Italian", "Spanish", "French", "Japanese", "Korean"]
+            ["English",
+             "Chinese",
+             "Italian",
+             "Spanish",
+             "French",
+             "Japanese",
+             "Korean"
+             ]
         )
 
 

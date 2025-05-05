@@ -5,7 +5,6 @@ from src.obfuscator import (
     obfuscate,
 )
 
-import pytest
 import shutil
 import io
 
@@ -44,7 +43,10 @@ class TestFunctionIsCSV:
         assert _is_csv(stream.buf) is True
         stream.close()
 
-        dummy_file[0].write_text("id,First Name, Last Name, Age\n1,Adam,Ant,20\n")
+        dummy_file[0].write_text(
+            "id,First Name, Last Name, Age\n1,Adam,Ant,20\n"
+        )
+
         stream = Bytestream(str(dummy_file[0]))
         assert _is_csv(stream.buf) is True
         stream.close()
@@ -56,7 +58,7 @@ class TestFunctionIsCSV:
 
 
 class TestFunctionColumnValidity:
-    def test_function_returns_false_and_empty_list_if_input_columns_doesnt_match_data(
+    def test_function_returns_empty_list_if_input_columns_doesnt_match_data(
         self, dummy_file
     ):
         dummy_file[0].write_text(test_good_data)
@@ -90,7 +92,6 @@ class TestFunctionAlterData:
     def test_function_replaces_data_with_obfuscated_string(
         self, dummy_file, dummy_output_file
     ):
-        columns = [0, 1, 2, 3]
 
         for column in range(4):
             dummy_file[0].write_text(test_good_data)

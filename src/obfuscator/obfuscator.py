@@ -1,6 +1,4 @@
-import os
 import csv
-import string
 import io
 
 
@@ -20,7 +18,7 @@ def _is_csv(i_data):
         return True
 
     except csv.Error:
-        print(f"File does not appear to contain correct .csv data")
+        print("File does not appear to contain correct .csv data")
         return False
 
 
@@ -49,7 +47,9 @@ def _alter_data(column_idx, i_data):
     with io.BytesIO() as targetf:
         for line in range(len(doc_length)):
             if line == 0:
-                targetf.write(bytes(i_data.readline().decode("utf-8"), "utf-8"))
+                targetf.write(
+                    bytes(i_data.readline().decode("utf-8"), "utf-8")
+                )
 
             source_line = i_data.readline().decode("utf-8").split(",")
             source_line[-1].replace("\n", "")

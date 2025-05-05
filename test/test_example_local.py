@@ -1,4 +1,8 @@
-from src.example_local import _call_csv_generator, _call_obfuscator, _create_byte_stream
+from src.example_local import (
+        _call_csv_generator,
+        _call_obfuscator,
+        _create_byte_stream
+)
 
 import pytest
 
