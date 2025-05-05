@@ -66,6 +66,17 @@ class TestFunctionLambdaHandler:
         
         assert "NoSuchKey" in str(result["error"])
         assert result["response"] == 500
+
+    def test_function_raises_exception_if_csv_file_missing(self, dummy_s3):
+        expected_error = 'An error occurred (404) when calling the HeadObject operation: Not Found'
+        with open("test/event.json", "r") as event_file:
+            test_event = json.load(event_file)
+        
+        dummy_s3.delete_object(Bucket="test-ingestion", Key="dummy.csv")
+        result = lambda_handler(test_event, {})
+        
+        assert expected_error in str(result["error"])
+        assert result["response"] == 500
             
 
 

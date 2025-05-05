@@ -40,7 +40,7 @@ def lambda_handler(event, context):
             )
             byte_stream.seek(0)
         except ClientError as e:
-            if e.response['Error']['Code'] == 'NoSuchKey':
+            if e.response['Error']['Code'] == 'NoSuchKey' or e.response['Error']['Code'] == '404':
                 print("No Such Key")
             raise e
 
@@ -52,25 +52,12 @@ def lambda_handler(event, context):
 
         s3.put_object(Bucket=os.environ["OBFUSCATED_BUCKET"], Body=result, Key=o_key)
 
-        try:
-            s3.delete_object(Bucket=metadata_filepath[0], Key=metadata_filepath[1])
-            print(f"Deleted {metadata_filepath[1]}")
-        except Exception as e:
-            print(e)
-            print(
-                f"Error deleting metadata file {metadata_filepath[1]} from bucket {metadata_filepath[0]}."
-            )
-            raise e
-
-        try:
-            s3.delete_object(Bucket=i_filepath[0], Key=i_filepath[1])
-            print(f"Deleted {i_filepath[1]}")
-        except Exception as e:
-            print(e)
-            print(
-                f"Error deleting CSV file {i_filepath[1]} from bucket {i_filepath[0]}."
-            )
-            raise e
+        s3.delete_object(Bucket=metadata_filepath[0], Key=metadata_filepath[1])
+        print(f"Deleted {metadata_filepath[1]}")
+        
+        s3.delete_object(Bucket=i_filepath[0], Key=i_filepath[1])
+        print(f"Deleted {i_filepath[1]}")
+        
 
         return {
             "response": 200,
