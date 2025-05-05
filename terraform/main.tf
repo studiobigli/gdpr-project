@@ -79,12 +79,12 @@ resource "aws_lambda_layer_version" "layer_obfuscator" {
 data "archive_file" "obfuscator_lambda_file" {
   type        = "zip"
   source_file = "${path.module}/${var.obfuscator_lambda_file}"
-  output_path = "${path.module}/${var.tmp_location}/obfuscator_lambda.zip"
+  output_path = "${path.module}/${var.tmp_location}/lambda_obfuscator.zip"
 }
 
 resource "aws_s3_object" "obfuscator_lambda" {
   bucket     = aws_s3_bucket.s3_code.bucket
-  key        = "obfuscator_lambda.zip"
+  key        = "lambda_obfuscator.zip"
   source     = data.archive_file.obfuscator_lambda_file.output_path
   etag       = filemd5(data.archive_file.obfuscator_lambda_file.output_path)
   depends_on = [data.archive_file.obfuscator_lambda_file]
@@ -105,7 +105,6 @@ resource "aws_lambda_function" "obfuscator_lambda" {
     variables = {
       INGESTION_BUCKET  = aws_s3_bucket.s3_ingestion.bucket
       OBFUSCATED_BUCKET = aws_s3_bucket.s3_obfuscated.bucket
-      #INGESTION_KEY     = aws_s3_object.csv_dummydata.key
     }
   }
 }
