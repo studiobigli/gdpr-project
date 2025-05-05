@@ -1,7 +1,7 @@
 
 # GDPR Obfuscator library for Python Project
 
-A simple Python library that takes a byte stream of a CSV file a list of column names of which whose data will be obfuscated with a string of "***". The library returns the data as a byte stream ready for further data manipulation by the user.
+A simple Python library that takes a byte stream of a CSV file, and a list of column names of which whose data will be obfuscated with a string of "***". The library returns the data as a byte stream ready for further data manipulation by the user.
 
 The library has been tested as an imported module for a local Python script, as well as deployed as a layer for use by an AWS Lambda.
 
@@ -30,7 +30,9 @@ make all
 This will run the unit testing, check for security vulnerabilities in the code and any dependencies, and check for any issues with PEP8 compliance using Flake8.
 
 For deploying the AWS Infrastructure with Terraform, you are required to replace values in the included terraform/example.tfbackend and terraform/example.tfvars files. 
-In example.tfvars, choose a suitable prefix for your S3 buckets (I suggest a random string containing numbers and lower case letters). You should also choose whichever AWS region is best suited for you (for example, eu-west-1)
+
+In example.tfvars, choose a suitable prefix for your S3 buckets (I suggest a random string containing numbers and lower case letters). You should also choose whichever AWS region is best suited for you.
+
 In example.tfbackend, choose a suitable name for your backend S3 which will store your terraform.tfstate file.
 
 When the above is completed, you can deploy the AWS Infrastructure with:
@@ -44,7 +46,7 @@ terraform plan -var-file=example.tfvars
 terraform apply -var-file=example.tfvars -auto-approve
 ```
 
-### Obfuscator.py
+## Obfuscator.py
 
 The main purpose of this project was to create a Python module that can assist with obfuscating data from imported CSV files. The module can be ported over to other projects with ease, and requires no dependencies outside of a base Python 3.12 installation. 
 
@@ -68,7 +70,7 @@ Parameters:
     ready for the calling python script to handle as the user sees fit.
 
 ```
-### Included scripts
+## Included scripts
 
 This repo contains a variety of scripts to demonstrate the practical use of the library, including:
 
@@ -86,7 +88,7 @@ generate_example.sh needs to be invoked with the prefix used in the example.tfva
 ./generate_example.sh prefixhere
 ```
 
-### Context And Goals
+## Context And Goals
 
 The project brief is included in [**gdpr_obfuscator.md**](gdpr_obfuscator.md).
 
@@ -101,7 +103,7 @@ As per the project brief, I believe my work reaches the requirements for Minimum
 
 Outside of the requirements, I aimed to prevent situations where the CSV data could remain accessible outside of the intended process, such as aiming to keep all data in memory rather than stored in temporary / duplicate files.
 
-### Extension tasks
+## Extension tasks
 
 I would like to continue working on the project and provide further examples of my understanding in how such a library could be handled.
 
