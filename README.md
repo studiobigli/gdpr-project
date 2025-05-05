@@ -80,6 +80,37 @@ This repo contains a variety of scripts to demonstrate the practical use of the 
 
 **generate_example.sh**: a Bash script designed to demonstrate the **example_lambda.py** functionality as part of the included **Terraform** deployment. It uses **fake_csv.py** to generate a CSV file, creating a .json with metadata required by the Lambda script, and uploads the two files to the ingestion bucket. After ten seconds, the Bash script will display the contents of the obfuscated data S3 bucket, before moving the obfuscated CSV file from the bucket to the users computer. It displays the first ten rows of both the unprocessed and the obfuscated CSV files to allow for immediate comparison.
 
+generate_example.sh needs to be invoked with the prefix used in the example.tfvars file as handled during installation, for example:
+
+```
+./generate_example.sh prefixhere
+```
+
+### Context And Goals
+
+The project brief is included in [**gdpr_obfuscator.md**](gdpr_obfuscator.md).
+
+As per the project brief, I believe my work reaches the requirements for Minimum Viable Product:
+- Contains a module 'obfuscator' -- when calls with the function 'obfuscate' it takes a byte stream containing a CSV file and a list of columns to be obfuscated; obfuscates the relevant data and returns the manipulated byte stream.
+- Handles CSV files up to 1MB with a runtime of less than 1 minute (typically less than 5 seconds).
+- The module is written in Python.
+- All of the Python code is PEP-8 compliant and tested for security vulnerabilities (demonstrated with Flake8, bandit and pip-audit).
+- The module is fully unit tested, and most of the example scripts / extension tasks are significantly unit tested.
+- Does not exceed the memory limits for Python Lambda dependencies (demonstrated deployed as a Layer with a live AWS Lambda example)
+- The code includes documentation (README.md, docstrings for callable functions, logging/print statements/error handling).
+
+Outside of the requirements, I aimed to prevent situations where the CSV data could remain accessible outside of the intended process, such as aiming to keep all data in memory rather than stored in temporary / duplicate files.
+
+### Extension tasks
+
+I would like to continue working on the project and provide further examples of my understanding in how such a library could be handled.
+
+- Create a web interface to allow the uploading of a CSV file, reading the available columns and allowing the user to choose which to obfuscate, obfuscating this data and returning the process CSV file to the user for immediate download.
+- Demonstrate the library's use outside of local scripts and AWS lambdas
+- Fully unit test all example scripts.
+- ~~Create a script that generates CSV data using Faker library~~ (completed)
+
+
 
 
 
