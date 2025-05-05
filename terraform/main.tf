@@ -100,12 +100,12 @@ resource "aws_lambda_function" "obfuscator_lambda" {
   source_code_hash = data.archive_file.obfuscator_lambda_file.output_base64sha256
   runtime          = "python3.12"
   layers           = [aws_lambda_layer_version.layer_obfuscator.arn]
-  #depends_on = ADD CLOUDWATCH FOR LOGGING
+  depends_on       = [aws_cloudwatch_log_group.log_group_obfuscator]
   environment {
     variables = {
       INGESTION_BUCKET  = aws_s3_bucket.s3_ingestion.bucket
       OBFUSCATED_BUCKET = aws_s3_bucket.s3_obfuscated.bucket
-      INGESTION_KEY     = aws_s3_object.csv_dummydata.key
+      #INGESTION_KEY     = aws_s3_object.csv_dummydata.key
     }
   }
 }
@@ -180,10 +180,41 @@ resource "aws_iam_role_policy_attachment" "policy_obfuscator_attachment" {
 
 # Upload dummy CSV file
 
-resource "aws_s3_object" "csv_dummydata" {
-  bucket = aws_s3_bucket.s3_ingestion.bucket
-  key    = "dummydata.csv"
-  source = var.dummy_csv_file
-  etag   = filemd5("${var.dummy_csv_file}")
+#resource "aws_s3_object" "csv_dummydata" {
+#  bucket = aws_s3_bucket.s3_ingestion.bucket
+#  key    = "dummydata.csv"
+#  source = var.dummy_csv_file
+#  etag   = filemd5("${var.dummy_csv_file}")
+#}
+
+# LogGroup for Lambda
+
+resource "aws_cloudwatch_log_group" "log_group_obfuscator" {
+    name                = "/aws/lambda/obfuscator"
+    retention_in_days   = 1
+    tags                = {
+        name            = "obfuscator log group"
+        environment     = "dev"
+        description     = "A Cloudwatch log group for obfuscator lambda to send logs to."
+    }
 }
 
+data "aws_iam_policy_document" "cloudwatch_log_document" {
+    statement {
+        effect = "Allow"
+        actions = [
+            "logs:CreateLogStream",
+            "logs:PutLogEvents"
+            ]
+        resources = ["arn:aws:logs:*:*:*"]
+    }
+}
+resource "aws_iam_policy" "cloudwatch_log_policy_for_lambda" {
+    name = "cloudwatch_log_policy_for_lambda"
+    policy = data.aws_iam_policy_document.cloudwatch_log_document.json
+}
+
+resource "aws_iam_role_policy_attachment" "cloudwatch_log_attachment_for_lambda" {
+    role = aws_iam_role.role_obfuscator.name
+    policy_arn = aws_iam_policy.cloudwatch_log_policy_for_lambda.arn
+}
