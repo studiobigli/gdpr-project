@@ -67,17 +67,15 @@ def _alter_data(column_idx, i_data):
         return targetf.getvalue()
 
 
-def obfuscate(columns, i_filepath):
+def obfuscate(columns, i_data):
     """
-    Takes the data from a CSV file and a list of column names and replaces the
-    data under those columns with the string '***'. The data is then stored in
-    another CSV file, with '-obfuscated' appended to the filename before the
-    file extension.
+    Takes CSV data from a byte stream and alters matching columns from an input list,
+    replacing them with "***" strings, before returning the altered byte stream.
 
     Parameters:
     columns (list of str): A list containing the names of columns whose data
     should be obfuscated.
-    i_filepath (str): A string containing the filepath of the CSV file to be
+    i_data (byte stream): A byte stream containing the binary data of the CSV file to be
     processed.
 
     Returns:
@@ -85,13 +83,13 @@ def obfuscate(columns, i_filepath):
     ready for the calling python script to handle as the user sees fit.
     """
 
-    if not _is_csv(i_filepath):
+    if not _is_csv(i_data):
         return False
 
-    columns = _column_validity(columns, i_filepath)
+    columns = _column_validity(columns, i_data)
     if columns[0] is False:
         return False
 
-    endfile = _alter_data(columns[1], i_filepath)
+    endfile = _alter_data(columns[1], i_data)
 
     return endfile
