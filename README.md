@@ -52,7 +52,6 @@ To use in your scripts, import the obfuscate function:
 
 ```
 from obfuscator import obfuscate
-
 ```
 ```
 Takes CSV data from a byte stream and alters matching columns from an input list,
